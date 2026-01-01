@@ -1,8 +1,11 @@
 package com.bank.debit.exception;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+
+import com.bank.debit.model.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +13,7 @@ import org.springframework.transaction.TransactionException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ServerWebExchange;
 
 /**
  * Global exception handler for the transaction service
@@ -64,6 +68,22 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleServiceUnavailableException(ServiceUnavailableException ex) {
         log.error("Service not avalaible: {}", ex.getMessage());
         return buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientFunds(
+            InsufficientFundsException ex, ServerWebExchange exchange) {
+
+        log.error("Fondos insuficientes: {}", ex.getMessage());
+
+        ErrorResponse error = new ErrorResponse();
+        error.setTimestamp(OffsetDateTime.now());
+        error.setStatus(HttpStatus.UNPROCESSABLE_ENTITY.value());
+        error.setError("Unprocessable Entity");
+        error.setMessage(ex.getMessage());
+        error.setPath(exchange.getRequest().getPath().value());
+
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
 
 }

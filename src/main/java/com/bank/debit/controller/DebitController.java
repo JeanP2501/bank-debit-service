@@ -1,9 +1,7 @@
 package com.bank.debit.controller;
 
 import com.bank.debit.api.DebitCardsApi;
-import com.bank.debit.model.AssociateAccountRequest;
-import com.bank.debit.model.CreateDebitCardRequest;
-import com.bank.debit.model.DebitCardResponse;
+import com.bank.debit.model.*;
 import com.bank.debit.service.DebitService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +58,25 @@ public class DebitController implements DebitCardsApi {
                 })
                 .doOnError(error -> log.error("Error al asociar cuenta: {}",
                         error.getMessage()));
+    }
+
+    @Override
+    public Mono<ResponseEntity<DebitTransactionResponse>> processDebitTransaction(
+            Mono<DebitTransactionRequest> debitTransactionRequest,
+            ServerWebExchange exchange) {
+
+        log.info("Recibiendo solicitud para procesar transacción con tarjeta de débito");
+
+        return debitTransactionRequest
+                .doOnNext(request -> log.info("Request recibido - DebitCardId: {}, Amount: {}",
+                        request.getDebitCardId(), request.getAmount()))
+                .flatMap(debitService::processTransaction)
+                .map(response -> {
+                    log.info("Transacción procesada exitosamente - TransactionId: {}",
+                            response.getTransactionId());
+                    return ResponseEntity.status(HttpStatus.CREATED).body(response);
+                })
+                .doOnError(error -> log.error("Error al procesar transacción: {}", error.getMessage()));
     }
 
 }
