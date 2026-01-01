@@ -1,0 +1,187 @@
+openapi: 3.0.3
+info:
+  title: Debit Card API
+  description: API para la gestión de tarjetas de débito
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8087
+    description: Servidor de desarrollo
+  - url: https://api.example.com
+    description: Servidor de producción
+
+paths:
+  /api/debit-cards:
+    post:
+      summary: Crear una nueva tarjeta de débito
+      description: Crea una nueva tarjeta de débito asociada a un cliente y cuenta principal
+      operationId: createDebitCard
+      tags:
+        - Debit Cards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDebitCardRequest'
+      responses:
+        '201':
+          description: Tarjeta de débito creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Cliente o cuenta no encontrados
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/debit-cards/associate:
+    put:
+      summary: Asociar una cuenta a tarjeta de débito
+      description: La cuenta seleccionada se asociará a la tarjeta de débito existente
+      operationId: associateAccountToDebit
+      tags:
+        - Debit Cards
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssociateAccountRequest'
+      responses:
+        '200':
+          description: Cuenta asociada exitosamente a la tarjeta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardResponse'
+        '400':
+          description: Solicitud inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tarjeta o cuenta no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CreateDebitCardRequest:
+      type: object
+      required:
+        - customerId
+        - primaryAccountId
+      properties:
+        customerId:
+          type: string
+          description: Identificador único del cliente
+          example: "CUST123456"
+        primaryAccountId:
+          type: string
+          description: Identificador único de la cuenta principal
+          example: "ACC789012"
+
+    AssociateAccountRequest:
+      type: object
+      required:
+        - customerId
+        - accountId
+      properties:
+        customerId:
+          type: string
+          description: Identificador único del cliente dueño de la tarjeta
+          example: "CUST123456"
+        accountId:
+          type: string
+          description: Identificador de la cuenta a asociar
+          example: "ACC789013"
+
+    DebitCardResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Identificador único de la tarjeta de débito
+          example: "CARD456789"
+        customerId:
+          type: string
+          description: Identificador del cliente
+          example: "CUST123456"
+        primaryAccountId:
+          type: string
+          description: Identificador de la cuenta principal
+          example: "ACC789012"
+        cardNumber:
+          type: string
+          description: Número de la tarjeta (enmascarado)
+          example: "****-****-****-1234"
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, BLOCKED]
+          description: Estado de la tarjeta
+          example: "ACTIVE"
+        associatedAccounts:
+          type: array
+          items:
+            type: string
+          description: Lista de IDs de cuentas asociadas a la tarjeta
+          example: ["ACC789012", "ACC789013", "ACC789014"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Fecha de creación
+          example: "2025-12-31T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Fecha de última actualización
+          example: "2025-12-31T15:45:00Z"
+        active:
+          type: boolean
+          description: Indicador si la tarjeta es activa o no
+          example: true
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-12-31T10:30:00Z"
+        status:
+          type: integer
+          example: 400
+        error:
+          type: string
+          example: "Bad Request"
+        message:
+          type: string
+          example: "El campo customerId es requerido"
+        path:
+          type: string
+          example: "/api/debit-cards/associate"
