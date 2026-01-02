@@ -8,5 +8,6 @@ public interface DebitRepository extends ReactiveMongoRepository<Debit, String> 
 
     Mono<Debit> findByCustomerIdAndPrimaryAccountId(String customerId, String primaryAccountId);
     Mono<Debit> findByCustomerIdAndActiveTrue(String customerId);
+    Mono<Debit> findByCustomerId(String customerId);
 
 }

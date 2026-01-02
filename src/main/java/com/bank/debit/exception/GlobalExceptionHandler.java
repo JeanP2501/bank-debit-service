@@ -86,4 +86,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error);
     }
 
+    /**
+     * Handle BusinessRuleException
+     */
+    @ExceptionHandler(BusinessRuleException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessRule(BusinessRuleException ex) {
+        log.error("Business rule violation: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    /**
+     * Handle BusinessRuleException
+     */
+    @ExceptionHandler(DebitException.class)
+    public ResponseEntity<Map<String, Object>> handleBusinessRule(DebitException ex) {
+        log.error("Debit exception: {}", ex.getMessage());
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
 }

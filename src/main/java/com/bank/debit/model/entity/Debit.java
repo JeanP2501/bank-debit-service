@@ -26,6 +26,8 @@ public class Debit {
 
     private List<String> associatedAccounts;
 
+    private String cardNumber;
+
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
 

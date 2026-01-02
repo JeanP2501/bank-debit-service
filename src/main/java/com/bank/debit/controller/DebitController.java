@@ -79,4 +79,37 @@ public class DebitController implements DebitCardsApi {
                 .doOnError(error -> log.error("Error al procesar transacción: {}", error.getMessage()));
     }
 
+    @Override
+    public Mono<ResponseEntity<DebitCardResponse>> getDebitCardById(
+            String id,
+            ServerWebExchange exchange) {
+
+        log.info("Recibiendo solicitud para consultar tarjeta de débito - ID: {}", id);
+
+        return debitService.getDebitCardById(id)
+                .map(response -> {
+                    log.info("Tarjeta de débito encontrada - CardId: {}", response.getId());
+                    return ResponseEntity.ok(response);
+                })
+                .doOnError(error -> log.error("Error al consultar tarjeta de débito {}: {}",
+                        id, error.getMessage()));
+    }
+
+    @Override
+    public Mono<ResponseEntity<DebitCardResponse>> getDebitCardByCustomerId(
+            String customerId,
+            ServerWebExchange exchange) {
+
+        log.info("Recibiendo solicitud para consultar tarjeta de débito por CustomerId: {}", customerId);
+
+        return debitService.getDebitCardByCustomerId(customerId)
+                .map(response -> {
+                    log.info("Tarjeta de débito encontrada para customer - CardId: {}, CustomerId: {}",
+                            response.getId(), response.getCustomerId());
+                    return ResponseEntity.ok(response);
+                })
+                .doOnError(error -> log.error("Error al consultar tarjeta de débito para customer {}: {}",
+                        customerId, error.getMessage()));
+    }
+
 }

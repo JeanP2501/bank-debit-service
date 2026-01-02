@@ -50,6 +50,76 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/debit-cards/{id}:
+    get:
+      summary: Obtener tarjeta de débito por ID
+      description: Consulta los detalles de una tarjeta de débito específica
+      operationId: getDebitCardById
+      tags:
+        - Debit Cards
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identificador único de la tarjeta de débito
+          schema:
+            type: string
+          example: "CARD456789"
+      responses:
+        '200':
+          description: Tarjeta de débito encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardResponse'
+        '404':
+          description: Tarjeta de débito no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/debit-cards/customer/{customerId}:
+    get:
+      summary: Obtener tarjeta de débito por ID de cliente
+      description: Consulta la tarjeta de débito activa de un cliente específico
+      operationId: getDebitCardByCustomerId
+      tags:
+        - Debit Cards
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: Identificador único del cliente
+          schema:
+            type: string
+          example: "CUST123456"
+      responses:
+        '200':
+          description: Tarjeta de débito encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardResponse'
+        '404':
+          description: Tarjeta de débito no encontrada para el cliente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno del servidor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/debit-cards/associate:
     put:
       summary: Asociar una cuenta a tarjeta de débito

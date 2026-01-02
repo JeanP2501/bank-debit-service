@@ -58,9 +58,22 @@ public class DebitService {
                 .flatMap(entity -> {
                     entity.setAssociatedAccounts(new ArrayList<>());
                     entity.getAssociatedAccounts().add(request.getPrimaryAccountId());
+                    entity.setCardNumber(generateCardNumber());
                     return debitRepository.save(entity);
                 })
                 .map(debitMapper::toResponse);
+    }
+
+    private String generateCardNumber() {
+        String number = String.format("%016d", (long)(Math.random() * 10000000000000000L));
+        return maskCardNumber(number);
+    }
+
+    private String maskCardNumber(String cardNumber) {
+        if (cardNumber.length() == 16) {
+            return "****-****-****-" + cardNumber.substring(12);
+        }
+        return cardNumber;
     }
 
     public Mono<DebitCardResponse> associateAccount(AssociateAccountRequest request) {
@@ -77,7 +90,7 @@ public class DebitService {
                 .doOnError(error -> log.error("Error to associate account: {}", error.getMessage()));
     }
 
-    private Mono<Debit> getActiveDebitCard(String customerId) {
+    public Mono<Debit> getActiveDebitCard(String customerId) {
         log.debug("Find active debit card: {}", customerId);
 
         return debitRepository.findByCustomerIdAndActiveTrue(customerId)
@@ -203,6 +216,31 @@ public class DebitService {
         response.setStatus(transactionResponse.getStatus().toString());
 
         return response;
+    }
+
+    public Mono<DebitCardResponse> getDebitCardById(String id) {
+        log.info("Consultando tarjeta de débito por ID: {}", id);
+
+        return debitRepository.findById(id)
+                .switchIfEmpty(Mono.error(new DebitException("Debit card not found: " + id)))
+                .map(debitMapper::toResponse)
+                .doOnSuccess(response -> log.info("Tarjeta de débito encontrada - CardId: {}, CustomerId: {}",
+                        response.getId(), response.getCustomerId()))
+                .doOnError(error -> log.error("Error al buscar tarjeta de débito {}: {}",
+                        id, error.getMessage()));
+    }
+
+    public Mono<DebitCardResponse> getDebitCardByCustomerId(String customerId) {
+        log.info("Consultando tarjeta de débito activa por CustomerId: {}", customerId);
+
+        return debitRepository.findByCustomerId(customerId)
+                .switchIfEmpty(Mono.error(new DebitException(
+                        "No active debit card found for customer: " + customerId)))
+                .map(debitMapper::toResponse)
+                .doOnSuccess(response -> log.info("Tarjeta de débito activa encontrada - CardId: {}, CustomerId: {}",
+                        response.getId(), response.getCustomerId()))
+                .doOnError(error -> log.error("Error al buscar tarjeta de débito para customer {}: {}",
+                        customerId, error.getMessage()));
     }
 
 }

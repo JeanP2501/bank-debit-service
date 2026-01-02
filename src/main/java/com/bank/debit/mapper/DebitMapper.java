@@ -6,6 +6,7 @@ import com.bank.debit.model.entity.Debit;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 @Component
 public class DebitMapper {
@@ -25,7 +26,11 @@ public class DebitMapper {
         response.setCustomerId(entity.getCustomerId());
         response.setPrimaryAccountId(entity.getPrimaryAccountId());
         response.setAssociatedAccounts(entity.getAssociatedAccounts());
+        response.setCardNumber(entity.getCardNumber());
         response.setActive(entity.isActive());
+        response.setCreatedAt(entity.getCreatedAt().atOffset(ZoneOffset.UTC));
+        response.setUpdatedAt(entity.getUpdatedAt()==null?
+                null:entity.getUpdatedAt().atOffset(ZoneOffset.UTC));
         return response;
     }
 
